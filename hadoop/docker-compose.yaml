@@ -1,0 +1,46 @@
+version: "2"
+services:
+   namenode:
+      image: apache/hadoop:3
+      container_name: sparrow-recsys-hadoop-namenode
+      hostname: sparrow-recsys-hadoop-namenode
+      command: ["hadoop", "namenode"]
+      ports:
+        - "9870:9870"
+        - "8020:8020"
+      env_file:
+        - ./docker-compose.config
+      environment:
+          ENSURE_NAMENODE_DIR: "/tmp/hadoop-hadoop/dfs/name"
+      volumes:
+        - /home:/mnt/home
+   datanode:
+      image: apache/hadoop:3
+      container_name: sparrow-recsys-hadoop-datanode
+      hostname: sparrow-recsys-hadoop-datanode
+      command: ["hadoop", "datanode"]
+      ports:
+        - "9864:9864"
+      env_file:
+        - ./docker-compose.config
+      volumes:
+        - /home:/mnt/home
+  #  resourcemanager:
+  #     image: apache/hadoop:3
+  #     container_name: sparrow-recsys-hadoop-resourcemanager
+  #     hostname: sparrow-recsys-hadoop-resourcemanager
+  #     command: ["yarn", "resourcemanager"]
+  #     ports:
+  #        - 8088:8088
+  #        - 8033:8033
+  #     env_file:
+  #       - ./docker-compose.config
+  #     volumes:
+  #       - ./test.sh:/opt/test.sh
+  #  nodemanager:
+  #     image: apache/hadoop:3
+  #     container_name: sparrow-recsys-hadoop-nodemanager
+  #     hostname: sparrow-recsys-hadoop-nodemanager
+  #     command: ["yarn", "nodemanager"]
+  #     env_file:
+  #       - ./docker-compose.config
