@@ -8,10 +8,11 @@ import json
 
 import tensorflow as tf
 
-HDFS_PATH_SAMPLE_DATA = "hdfs://demo-recsys-data:8020/sparrow_recsys/sampledata/"
-HDFS_PATH_MODEL_DATA = "hdfs://demo-recsys-data:8020/sparrow_recsys/modeldata/"
-REDIS_SERVER="demo-recsys-data"
+HDFS_PATH_SAMPLE_DATA = "hdfs://sparrow-recsys-dev:8020/sparrow_recsys/sampledata/"
+HDFS_PATH_MODEL_DATA = "hdfs://sparrow-recsys-dev:8020/sparrow_recsys/modeldata/"
+REDIS_SERVER="sparrow-recsys-dev"
 REDIS_PORT=6379
+REDIS_PASSWD="123456"
 REDIS_KEY_VERSION_MODEL_WIDE_DEEP = "sparrow_recsys:version:model_wd"
 
 # download sampling data from HDFS
@@ -21,7 +22,7 @@ tmp_model_dir = "tmp_model"
 if os.path.exists(tmp_sample_dir):
     shutil.rmtree(tmp_sample_dir)
 
-subprocess.Popen(["hadoop", "fs", "-get", HDFS_PATH_SAMPLE_DATA, tmp_sample_dir], stdout=subprocess.PIPE).communicate()
+subprocess.Popen(["hdfs", "dfs", "-get", HDFS_PATH_SAMPLE_DATA, tmp_sample_dir], stdout=subprocess.PIPE).communicate()
 
 # load sample as tf dataset
 def get_dataset(file_path):
@@ -200,12 +201,12 @@ tf.keras.models.save_model(
 )
 
 if os.path.exists(f"{tmp_model_dir}/widendeep/{version}"):
-    subprocess.Popen(["hadoop", "fs", "-rm", "-r", f"{HDFS_PATH_MODEL_DATA}widendeep/{version}"], stdout=subprocess.PIPE).communicate()
-    subprocess.Popen(["hadoop", "fs", "-mkdir", "-p", f"{HDFS_PATH_MODEL_DATA}widendeep/"], stdout=subprocess.PIPE).communicate()
-    subprocess.Popen(["hadoop", "fs", "-put", f"{tmp_model_dir}/widendeep/{version}", f"{HDFS_PATH_MODEL_DATA}widendeep/"], stdout=subprocess.PIPE).communicate()
+    subprocess.Popen(["hdfs", "dfs", "-rm", "-r", f"{HDFS_PATH_MODEL_DATA}widendeep/{version}"], stdout=subprocess.PIPE).communicate()
+    subprocess.Popen(["hdfs", "dfs", "-mkdir", "-p", f"{HDFS_PATH_MODEL_DATA}widendeep/"], stdout=subprocess.PIPE).communicate()
+    subprocess.Popen(["hdfs", "dfs", "-put", f"{tmp_model_dir}/widendeep/{version}", f"{HDFS_PATH_MODEL_DATA}widendeep/"], stdout=subprocess.PIPE).communicate()
     print(f"WideNDeep model data is uploaded to HDFS: {HDFS_PATH_MODEL_DATA}widendeep/{version}")
 
     # update model version in redis
-    r = redis.Redis(host=REDIS_SERVER, port=REDIS_PORT)
+    r = redis.Redis(host=REDIS_SERVER, port=REDIS_PORT, password=REDIS_PASSWD)
     r.set(REDIS_KEY_VERSION_MODEL_WIDE_DEEP, version)
 

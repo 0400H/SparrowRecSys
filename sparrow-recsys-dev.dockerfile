@@ -51,7 +51,7 @@ RUN ssh-keygen -t rsa -f ~/.ssh/id_rsa -P '' && \
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 
 RUN pip3 install pip --upgrade && \
-    pip3 install tensorflow tensorflow_hub tensorflow_text pymysql redis kafka-python
+    pip3 install tensorflow tensorflow_hub tensorflow_text pyspark pymysql redis kafka-python jupyter
 
 COPY ssh /etc/ssh
 COPY mysql/mysql.conf.d /etc/mysql/mysql.conf.d

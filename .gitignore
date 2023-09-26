@@ -27,7 +27,9 @@ hs_err_pid*
 data
 target/
 __pycache__
+.ipynb_checkpoints/
 SparrowRecSys.iml
 TFRecModel.iml
 RecPySpark.iml
 mysql/*.csv
+nohup.out
