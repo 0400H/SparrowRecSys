@@ -3,9 +3,9 @@ set -ex
 
 # docker run -itd --rm --name sparrow-recsys-mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 mysql:8.0-debian
 
-docker network create hadoop
+docker network create hadoop || true
 
-docker rm -f sparrow-recsys-dev
+# docker rm -f sparrow-recsys-dev
 
 # container_name=sparrow-recsys-dev
 # docker run -td --rm \
@@ -32,8 +32,8 @@ docker run -td --rm \
     -e https_proxy=${https_proxy} \
     -e no_proxy=${no_proxy} \
     -p 19001:9001 \
-    -p 9870:9870 \
-    -p 8088:8088 \
+    -p 19870:9870 \
+    -p 18088:8088 \
     -p 13307:3306 \
     -v /dev:/dev \
     -v /home:/mnt/home \

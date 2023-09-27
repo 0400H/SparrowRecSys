@@ -29,15 +29,20 @@ RUN apt-get update && \
         git \
         vim
 
-RUN apt-get install -y mysql-server mysql-client redis-server redis
+RUN apt-get install -y mysql-server mysql-client redis-server redis intel-mkl
+
+ENV MKL_NUM_THREADS=4
+RUN ln -sf /usr/lib/x86_64-linux-gnu/liblapack.so /usr/local/lib/libblas.so.3 \
+    && ln -sf /usr/lib/x86_64-linux-gnu/liblapack.so /usr/local/lib/liblapack.so.3
 
 # Hadoop
 # https://github.com/apache/hadoop/blob/docker-hadoop-3/Dockerfile
 # https://github.com/kiwenlau/hadoop-cluster-docker/blob/master/Dockerfile
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 ENV HADOOP_HOME=${INSTALL_PREFIX}/hadoop
-ENV PATH=${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin:${PATH}
 ENV HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
+ENV PATH=${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin:${PATH}
+ENV LD_LIBRARY_PATH=${HADOOP_HOME/lib/native}:${LD_LIBRARY_PATH}
 
 ARG HADOOP_VERSION=3.3.6
 RUN apt-get install -y openjdk-8-jdk && \
