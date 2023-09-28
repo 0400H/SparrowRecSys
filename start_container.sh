@@ -21,22 +21,34 @@ if [ "$proxy_server" != "" ]; then
 fi
 
 # export gpu_device=--gpus=all
-# export proxy_agent=sparrow-recsys-hadoop-namenode
-# export proxy_agent_ip=127.0.0.1
 
+docker network create hadoop || true
+
+docker rm -f sparrow-recsys-dev
+
+container_name=sparrow-recsys-dev
 docker run -td --rm \
+    --privileged=true \
+    --network=hadoop \
     --name=${name} \
     --hostname=${name} \
-    --network=hadoop \
-    --privileged=true \
-    --env-file=hadoop/.env \
-    --add-host="${name}:127.0.0.1" \
+    --network-alias=${name} \
     ${gpu_device} \
-    -p 9870:9870 \
-    -p 8020:8020 \
+    -p 13307:3306 \
+    -p 18080:8080 \
+    -p 18081:8081 \
+    -p 18088:8088 \
+    -p 19001:9001 \
+    -p 19870:9870 \
     -v /dev:/dev \
     -v /home:/mnt/home \
+    -v `pwd`/supervisor:/etc/supervisor \
     -e http_proxy=${http_proxy} \
     -e https_proxy=${https_proxy} \
     -e no_proxy=${no_proxy} \
     ${image}
+
+docker network inspect hadoop
+docker exec -it ${name} bash -c "ip addr"
+docker logs ${name}
+docker exec -it ${name} bash

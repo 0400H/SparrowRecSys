@@ -1,8 +1,15 @@
 #!/bin/bash
 set -e
 
-docker_file=$1
-image_name=$2
+docker_file=sparrow-recsys-dev.dockerfile
+if [ "$1" != "" ]; then
+    docker_file=$1
+fi
+
+image_name=sparrow-recsys:dev-latest
+if [ "$2" != "" ]; then
+    image_name=$2
+fi
 
 # Use the host proxy as the default configuration, or specify a proxy_server
 # no_proxy="localhost,127.0.0.1"

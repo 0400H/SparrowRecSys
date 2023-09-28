@@ -12,13 +12,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y \
         build-essential \
-        python3-pip \
         ca-certificates \
-        openssh-server \
+        python3-pip \
         net-tools \
         supervisor \
-        sshpass \
-        nginx \
         rsync \
         unzip \
         sudo \
@@ -29,8 +26,9 @@ RUN apt-get update && \
         git \
         vim
 
-RUN apt-get install -y mysql-server mysql-client redis-server redis intel-mkl
+RUN apt-get install -y openssh-server sshpass nginx mysql-server mysql-client redis-server redis intel-mkl
 
+# MKL
 ENV MKL_NUM_THREADS=4
 RUN ln -sf /usr/lib/x86_64-linux-gnu/liblapack.so /usr/local/lib/libblas.so.3 \
     && ln -sf /usr/lib/x86_64-linux-gnu/liblapack.so /usr/local/lib/liblapack.so.3
@@ -42,16 +40,36 @@ ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 ENV HADOOP_HOME=${INSTALL_PREFIX}/hadoop
 ENV HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
 ENV PATH=${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin:${PATH}
-ENV LD_LIBRARY_PATH=${HADOOP_HOME/lib/native}:${LD_LIBRARY_PATH}
+ENV LD_LIBRARY_PATH=${HADOOP_HOME}/lib/native:${LD_LIBRARY_PATH}
 
 ARG HADOOP_VERSION=3.3.6
-RUN apt-get install -y openjdk-8-jdk && \
-    axel -n 6 https://dlcdn.apache.org/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz && \
+RUN apt-get install -y openjdk-8-jdk
+RUN axel -n 4 https://dlcdn.apache.org/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz && \
     tar -zxvf hadoop-${HADOOP_VERSION}.tar.gz -C ${INSTALL_PREFIX} && \
     rm -rf hadoop-${HADOOP_VERSION}.tar.gz && \
     ln -s ${INSTALL_PREFIX}/hadoop-${HADOOP_VERSION} ${HADOOP_HOME}
 
-# ssh without key
+# Spark
+ENV SPARK_HOME=${INSTALL_PREFIX}/spark
+ENV PATH=${SPARK_HOME}bin:${SPARK_HOME}/sbin:${PATH}
+ARG SPARK_VERSION=3.5.0
+RUN axel -n 4 https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz && \
+    tar -zxvf spark-${SPARK_VERSION}-bin-hadoop3.tgz -C ${INSTALL_PREFIX} && \
+    rm -rf spark-${SPARK_VERSION}-bin-hadoop3.tgz && \
+    ln -s ${INSTALL_PREFIX}/spark-${SPARK_VERSION}-bin-hadoop3 ${SPARK_HOME}
+
+# Kafka
+ENV KAFKA_HOME=${INSTALL_PREFIX}/kafka
+ENV PATH=${KAFKA_HOME}bin:${PATH}
+ARG KAFKA_VERSION=3.5.0
+RUN axel -n 4 https://downloads.apache.org/kafka/${KAFKA_VERSION}/kafka_2.13-${KAFKA_VERSION}.tgz && \
+    tar -zxvf kafka_2.13-${KAFKA_VERSION}.tgz -C ${INSTALL_PREFIX} && \
+    rm -rf kafka_2.13-${KAFKA_VERSION}.tgz && \
+    ln -s ${INSTALL_PREFIX}/kafka_2.13-${KAFKA_VERSION} ${KAFKA_HOME}
+
+# zookeeper
+
+# SSH without key
 RUN ssh-keygen -t rsa -f ~/.ssh/id_rsa -P '' && \
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 
@@ -62,6 +80,7 @@ COPY ssh /etc/ssh
 COPY mysql/mysql.conf.d /etc/mysql/mysql.conf.d
 COPY mysql/mysqld-init.sh ${INSTALL_PREFIX}/bin
 COPY hadoop/etc/hadoop ${HADOOP_HOME}/etc/hadoop
+COPY spark/conf ${SPARK_HOME}/conf
 # COPY supervisor /etc/supervisor
 
 # # Clean tmp files
