@@ -13,14 +13,18 @@ import tensorflow_text as text
 
 from kafka import KafkaConsumer
 
-HDFS_PATH_MOVIE_EMBEDDINGS="hdfs://demo-recsys-data:8020/sparrow_recsys/movie-embeddings/"
-HDFS_MOVIE_EMBEDDING_BATCH_SIZE=3
-REDIS_SERVER="demo-recsys-data"
+
+HDFS_PATH = "hdfs://sparrow-recsys-dev:8020/sparrow_recsys/"
+HDFS_PATH_MOVIE_EMBEDDINGS = HDFS_PATH+"movie-embeddings/"
+HDFS_MOVIE_EMBEDDING_BATCH_SIZE = 3
+REDIS_SERVER="sparrow-recsys-dev"
 REDIS_PORT=6379
-KAFKA_SERVERS="demo-recsys-data:9092"
+REDIS_PASSWD="123456"
 REDIS_KEY_MOVIE_EMBEDDING_VERSION="sparrow_recsys:version:me"
 REDIS_KEY_PREFIX_MOVIE_EMBEDDING="sparrow_recsys:me"
+KAFKA_SERVERS = "sparrow-recsys-dev:9092"
 
+# get embeddings
 tfhub_handle_preprocess = "https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3"
 tfhub_handle_encoder = "https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-4_H-128_A-2/2"
 
@@ -51,7 +55,7 @@ def process_movies(movies: []):
         tmp_file.close()
 
     # save to redis
-    r = redis.Redis(host=REDIS_SERVER, port=REDIS_PORT)
+    r = redis.Redis(host=REDIS_SERVER, port=REDIS_PORT, password=REDIS_PASSWD)
     version = r.get(REDIS_KEY_MOVIE_EMBEDDING_VERSION)
 
     if version is None:
@@ -75,10 +79,8 @@ def process_movies(movies: []):
         # save to HDFS
         batch_id=strftime("%Y%m%d%H%M%S", localtime())
         if os.path.isfile(tmp_file_name):
-            subprocess.Popen(["hadoop", "fs", "-mkdir", "-p",
-                              f"{HDFS_PATH_MOVIE_EMBEDDINGS}{batch_id}/"], stdout=subprocess.PIPE).communicate()
-            subprocess.Popen(["hadoop", "fs", "-put", f"./{tmp_file_name}",
-                              f"{HDFS_PATH_MOVIE_EMBEDDINGS}{batch_id}/part-0"], stdout=subprocess.PIPE).communicate()
+            subprocess.Popen(["hdfs", "dfs", "-mkdir", "-p", f"{HDFS_PATH_MOVIE_EMBEDDINGS}{batch_id}/"], stdout=subprocess.PIPE).communicate()
+            subprocess.Popen(["hdfs", "dfs", "-put", f"./{tmp_file_name}",f"{HDFS_PATH_MOVIE_EMBEDDINGS}{batch_id}/part-0"], stdout=subprocess.PIPE).communicate()
 
             print(f"{current_batch_size} movie embeddings are uploaded to HDFS: {HDFS_PATH_MOVIE_EMBEDDINGS}{batch_id}/")
             os.remove(tmp_file_name)

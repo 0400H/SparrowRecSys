@@ -13,8 +13,8 @@ import tensorflow_text as text
 import os
 
 
-HDFS_PATH="hdfs://sparrow-recsys-dev:8020/sparrow_recsys/"
-HDFS_PATH_MOVIE_EMBEDDINGS=HDFS_PATH+"movie-embeddings/"
+HDFS_PATH = "hdfs://sparrow-recsys-dev:8020/sparrow_recsys/"
+HDFS_PATH_MOVIE_EMBEDDINGS = HDFS_PATH+"movie-embeddings/"
 REDIS_SERVER="sparrow-recsys-dev"
 REDIS_PORT=6379
 REDIS_PASSWD="123456"
@@ -69,9 +69,9 @@ with open(tmp_file_name, 'a') as tmp_file:
     list(map(lambda x: tmp_file.write(f"{x[0]}\t{x[1]}\n"), movie_embeddings))
 
 if os.path.isfile(tmp_file_name):
-    subprocess.Popen(["hadoop", "fs", "-rm", "-r", HDFS_PATH_MOVIE_EMBEDDINGS], stdout=subprocess.PIPE).communicate()
-    subprocess.Popen(["hadoop", "fs", "-mkdir", "-p", f"{HDFS_PATH_MOVIE_EMBEDDINGS}0000/"], stdout=subprocess.PIPE).communicate()
-    subprocess.Popen(["hadoop", "fs", "-put", f"./{tmp_file_name}", f"{HDFS_PATH_MOVIE_EMBEDDINGS}0000/part-0"], stdout=subprocess.PIPE).communicate()
+    subprocess.Popen(["hdfs", "dfs", "-rm", "-r", HDFS_PATH_MOVIE_EMBEDDINGS], stdout=subprocess.PIPE).communicate()
+    subprocess.Popen(["hdfs", "dfs", "-mkdir", "-p", f"{HDFS_PATH_MOVIE_EMBEDDINGS}0000/"], stdout=subprocess.PIPE).communicate()
+    subprocess.Popen(["hdfs", "dfs", "-put", f"./{tmp_file_name}", f"{HDFS_PATH_MOVIE_EMBEDDINGS}0000/part-0"], stdout=subprocess.PIPE).communicate()
     os.remove(tmp_file_name)
     print(f"Movie embeddings is uploaded to HDFS: {HDFS_PATH_MOVIE_EMBEDDINGS}")
 

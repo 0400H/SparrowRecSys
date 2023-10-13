@@ -187,7 +187,8 @@ if __name__ == '__main__':
     conf = SparkConf().setAppName('ctrModel').setMaster('local')
     spark = SparkSession.builder.config(conf=conf).getOrCreate()
     # Change to your own filepath
-    file_path = 'file:///mnt/home/0400h/github/SparrowRecSys/'
+    workdir = os.getenv('WORK_DIR')
+    file_path = 'file://' + workdir + '/online/src/main/resources/webroot/'
     rawSampleDataPath = file_path + "sampledata/ratings.csv"
     embLength = 10
     samples = processItemSequence(spark, rawSampleDataPath)

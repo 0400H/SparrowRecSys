@@ -1,6 +1,7 @@
+import os
 from pyspark import SparkConf
 from pyspark.ml import Pipeline
-from pyspark.ml.feature import OneHotEncoderEstimator, StringIndexer, QuantileDiscretizer, MinMaxScaler
+from pyspark.ml.feature import OneHotEncoder, StringIndexer, QuantileDiscretizer, MinMaxScaler
 from pyspark.ml.linalg import VectorUDT, Vectors
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
@@ -10,7 +11,7 @@ from pyspark.sql import functions as F
 
 def oneHotEncoderExample(movieSamples):
     samplesWithIdNumber = movieSamples.withColumn("movieIdNumber", F.col("movieId").cast(IntegerType()))
-    encoder = OneHotEncoderEstimator(inputCols=["movieIdNumber"], outputCols=['movieIdVector'], dropLast=False)
+    encoder = OneHotEncoder(inputCols=["movieIdNumber"], outputCols=['movieIdVector'], dropLast=False)
     oneHotEncoderSamples = encoder.fit(samplesWithIdNumber).transform(samplesWithIdNumber)
     oneHotEncoderSamples.printSchema()
     oneHotEncoderSamples.show(10)
@@ -60,8 +61,9 @@ def ratingFeatures(ratingSamples):
 if __name__ == '__main__':
     conf = SparkConf().setAppName('featureEngineering').setMaster('local')
     spark = SparkSession.builder.config(conf=conf).getOrCreate()
-    file_path = 'file:///Users/zhewang/Workspace/SparrowRecSys/src/main/resources'
-    movieResourcesPath = file_path + "/webroot/sampledata/movies.csv"
+    workdir = os.getenv('WORK_DIR')
+    file_path = 'file://' + workdir + '/online/src/main/resources/webroot/'
+    movieResourcesPath = file_path + "sampledata/movies.csv"
     movieSamples = spark.read.format('csv').option('header', 'true').load(movieResourcesPath)
     print("Raw Movie Samples:")
     movieSamples.show(10)
@@ -71,6 +73,6 @@ if __name__ == '__main__':
     print("MultiHotEncoder Example:")
     multiHotEncoderExample(movieSamples)
     print("Numerical features Example:")
-    ratingsResourcesPath = file_path + "/webroot/sampledata/ratings.csv"
+    ratingsResourcesPath = file_path + "sampledata/ratings.csv"
     ratingSamples = spark.read.format('csv').option('header', 'true').load(ratingsResourcesPath)
     ratingFeatures(ratingSamples)

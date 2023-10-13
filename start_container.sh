@@ -12,6 +12,12 @@ else
     name=$2
 fi
 
+if  [ ! -n "$3" ] ; then
+    network="hadoop"
+else
+    network=$3
+fi
+
 # Use the host proxy as the default configuration, or specify a proxy_server
 # no_proxy="localhost,127.0.0.1"
 # proxy_server="" # your http proxy server
@@ -22,21 +28,23 @@ fi
 
 # export gpu_device=--gpus=all
 
-docker network create hadoop || true
+docker network create ${network} || true
 
-docker rm -f sparrow-recsys-dev
+docker rm -f ${name}
 
-container_name=sparrow-recsys-dev
-docker run -td --rm \
+docker run -d --rm \
     --privileged=true \
-    --network=hadoop \
     --name=${name} \
     --hostname=${name} \
     --network-alias=${name} \
+    --network=${network} \
     ${gpu_device} \
+    -p 10080:80 \
     -p 13307:3306 \
     -p 18080:8080 \
     -p 18081:8081 \
+    -p 18082:8082 \
+    -p 18082:8083 \
     -p 18088:8088 \
     -p 19001:9001 \
     -p 19870:9870 \
@@ -48,7 +56,7 @@ docker run -td --rm \
     -e no_proxy=${no_proxy} \
     ${image}
 
-docker network inspect hadoop
+docker network inspect ${network}
 docker exec -it ${name} bash -c "ip addr"
 docker logs ${name}
 docker exec -it ${name} bash

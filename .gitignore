@@ -28,6 +28,10 @@ data
 target/
 __pycache__
 .ipynb_checkpoints/
+tmp_*/
+target/
+modeldata/
+sampledata/
 SparrowRecSys.iml
 TFRecModel.iml
 RecPySpark.iml

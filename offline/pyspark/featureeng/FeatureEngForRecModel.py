@@ -1,3 +1,4 @@
+import os
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 import pyspark.sql as sql
@@ -141,9 +142,10 @@ def splitAndSaveTrainingTestSamplesByTimeStamp(samplesWithUserFeatures, file_pat
 if __name__ == '__main__':
     conf = SparkConf().setAppName('featureEngineering').setMaster('local')
     spark = SparkSession.builder.config(conf=conf).getOrCreate()
-    file_path = 'file:///home/hadoop/SparrowRecSys/src/main/resources'
-    movieResourcesPath = file_path + "/webroot/sampledata/movies.csv"
-    ratingsResourcesPath = file_path + "/webroot/sampledata/ratings.csv"
+    workdir = os.getenv('WORK_DIR')
+    file_path = 'file://' + workdir + '/online/src/main/resources/webroot/'
+    movieResourcesPath = file_path + "sampledata/movies.csv"
+    ratingsResourcesPath = file_path + "sampledata/ratings.csv"
     movieSamples = spark.read.format('csv').option('header', 'true').load(movieResourcesPath)
     ratingSamples = spark.read.format('csv').option('header', 'true').load(ratingsResourcesPath)
     ratingSamplesWithLabel = addSampleLabel(ratingSamples)
@@ -151,5 +153,5 @@ if __name__ == '__main__':
     samplesWithMovieFeatures = addMovieFeatures(movieSamples, ratingSamplesWithLabel)
     samplesWithUserFeatures = addUserFeatures(samplesWithMovieFeatures)
     # save samples as csv format
-    splitAndSaveTrainingTestSamples(samplesWithUserFeatures, file_path + "/webroot/sampledata")
-    # splitAndSaveTrainingTestSamplesByTimeStamp(samplesWithUserFeatures, file_path + "/webroot/sampledata")
+    splitAndSaveTrainingTestSamples(samplesWithUserFeatures, file_path + "sampledata")
+    # splitAndSaveTrainingTestSamplesByTimeStamp(samplesWithUserFeatures, file_path + "sampledata")
