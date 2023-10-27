@@ -5,12 +5,14 @@ import shutil
 from time import localtime, strftime
 import redis
 import json
+from tqdm import tqdm
 
 import tensorflow as tf
 
-HDFS_PATH_SAMPLE_DATA = "hdfs:///sparrow_recsys/sampledata/"
-HDFS_PATH_MODEL_DATA = "hdfs:///sparrow_recsys/modeldata/"
-REDIS_SERVER="sparrow-recsys-dev"
+HDFS_SERVER = "hdfs://sparrow-recsys:8020"
+HDFS_PATH_SAMPLE_DATA = HDFS_SERVER + "/sparrow_recsys/sampledata"
+HDFS_PATH_MODEL_DATA = HDFS_SERVER + "/sparrow_recsys/modeldata"
+REDIS_SERVER="sparrow-recsys"
 REDIS_PORT=6379
 REDIS_PASSWD="123456"
 REDIS_KEY_VERSION_MODEL_WIDE_DEEP = "sparrow_recsys:version:model_wd"
@@ -54,7 +56,7 @@ GENRE_FEATURES = {
 
 # all categorical features
 categorical_columns = []
-for feature, vocab in GENRE_FEATURES.items():
+for feature, vocab in tqdm(GENRE_FEATURES.items()):
     cat_col = tf.feature_column.categorical_column_with_vocabulary_list(
         key=feature, vocabulary_list=vocab)
     emb_col = tf.feature_column.embedding_column(cat_col, 10)
@@ -161,7 +163,8 @@ backup_dir = os.path.join(working_dir, 'backup')
 callbacks = [
     tf.keras.callbacks.TensorBoard(log_dir=log_dir),
     tf.keras.callbacks.ModelCheckpoint(filepath=ckpt_filepath),
-    tf.keras.callbacks.experimental.BackupAndRestore(backup_dir=backup_dir),
+    tf.keras.callbacks.BackupAndRestore(backup_dir=backup_dir),
+    # tf.keras.callbacks.experimental.BackupAndRestore(backup_dir=backup_dir),
 ]
 
 model.fit(dc, epochs=5, steps_per_epoch=1000, callbacks=callbacks)
@@ -172,7 +175,7 @@ model.summary()
 eval_accuracy = tf.keras.metrics.Accuracy()
 
 test_dataset = get_dataset(f"{tmp_sample_dir}/testSamples/*/part-*.csv")
-for batch_data, labels in test_dataset:
+for batch_data, labels in tqdm(test_dataset):
     pred = model(batch_data, training=False)
     actual_pred = tf.cast(tf.greater(pred, 0.5), tf.int64)
     eval_accuracy.update_state(labels, actual_pred)
@@ -181,7 +184,7 @@ print ("Evaluation accuracy: %f" % eval_accuracy.result())
 
 # print some predict results
 predictions = model.predict(test_dataset)
-for prediction, goodRating in zip(predictions[:12], list(test_dataset)[0][1][:12]):
+for prediction, goodRating in tqdm(zip(predictions[:12], list(test_dataset)[0][1][:12])):
     print("Predicted good rating: {:.2%}".format(prediction[0]),
           " | Actual rating label: ",
           ("Good Rating" if bool(goodRating) else "Bad Rating"))
@@ -201,10 +204,10 @@ tf.keras.models.save_model(
 )
 
 if os.path.exists(f"{tmp_model_dir}/widendeep/{version}"):
-    subprocess.Popen(["hdfs", "dfs", "-rm", "-r", f"{HDFS_PATH_MODEL_DATA}widendeep/{version}"], stdout=subprocess.PIPE).communicate()
-    subprocess.Popen(["hdfs", "dfs", "-mkdir", "-p", f"{HDFS_PATH_MODEL_DATA}widendeep/"], stdout=subprocess.PIPE).communicate()
-    subprocess.Popen(["hdfs", "dfs", "-put", f"{tmp_model_dir}/widendeep/{version}", f"{HDFS_PATH_MODEL_DATA}widendeep/"], stdout=subprocess.PIPE).communicate()
-    print(f"WideNDeep model data is uploaded to HDFS: {HDFS_PATH_MODEL_DATA}widendeep/{version}")
+    subprocess.Popen(["hdfs", "dfs", "-rm", "-r", f"{HDFS_PATH_MODEL_DATA}/widendeep/{version}"], stdout=subprocess.PIPE).communicate()
+    subprocess.Popen(["hdfs", "dfs", "-mkdir", "-p", f"{HDFS_PATH_MODEL_DATA}/widendeep/"], stdout=subprocess.PIPE).communicate()
+    subprocess.Popen(["hdfs", "dfs", "-put", f"{tmp_model_dir}/widendeep/{version}", f"{HDFS_PATH_MODEL_DATA}/widendeep/"], stdout=subprocess.PIPE).communicate()
+    print(f"WideNDeep model data is uploaded to HDFS: {HDFS_PATH_MODEL_DATA}/widendeep/{version}")
 
     # update model version in redis
     r = redis.Redis(host=REDIS_SERVER, port=REDIS_PORT, password=REDIS_PASSWD)

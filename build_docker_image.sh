@@ -6,7 +6,7 @@ if [ "$1" != "" ]; then
     docker_file=$1
 fi
 
-image_name=sparrow-recsys:dev-latest
+image_name=sparrow-recsys:dev-hadoop3-latest
 if [ "$2" != "" ]; then
     image_name=$2
 fi

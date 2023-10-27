@@ -2,13 +2,15 @@ set -ex
 
 # upload data from mysql to hdfs.
 
-HOST=127.0.0.1
-PORT=3306
-USER=root
-PASSWD=123456
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWD=123456
+MYSQL_DB=sparrow_recsys
+HDFS_SERVER=sparrow-recsys:8020
 
-mysql -h${HOST} -P${PORT} -u${USER} -p${PASSWD} -Dsparrow_recsys -e "select * from movies" -N  > movies.csv
-mysql -h${HOST} -P${PORT} -u${USER} -p${PASSWD} -Dsparrow_recsys -e "select * from ratings" -N  > ratings.csv
+mysql -h${MYSQL_HOST} -P${MYSQL_PORT} -u${MYSQL_USER} -p${MYSQL_PASSWD} -D${MYSQL_DB} -e "select * from movies" -N  > movies.csv
+mysql -h${MYSQL_HOST} -P${MYSQL_PORT} -u${MYSQL_USER} -p${MYSQL_PASSWD} -D${MYSQL_DB} -e "select * from ratings" -N  > ratings.csv
 
 movie_count=`cat movies.csv | wc -l`
 rating_count=`cat ratings.csv | wc -l`
@@ -26,13 +28,13 @@ if  [ "100" -gt "$rating_count" ]; then
     exit 1
 fi
 
-hdfs dfs -rm -r hdfs:///sparrow_recsys/movies/* || true
-hdfs dfs -rm -r hdfs:///sparrow_recsys/ratings/* || true
+hdfs dfs -rm -r hdfs://${HDFS_SERVER}/sparrow_recsys/movies/* || true
+hdfs dfs -rm -r hdfs://${HDFS_SERVER}/sparrow_recsys/ratings/* || true
 
-hdfs dfs -mkdir -p hdfs:///sparrow_recsys/movies/0000
-hdfs dfs -mkdir -p hdfs:///sparrow_recsys/ratings/0000
+hdfs dfs -mkdir -p hdfs://${HDFS_SERVER}/sparrow_recsys/movies/0000
+hdfs dfs -mkdir -p hdfs://${HDFS_SERVER}/sparrow_recsys/ratings/0000
 
-hdfs dfs -put movies.csv hdfs:///sparrow_recsys/movies/0000/part-0
-hdfs dfs -put ratings.csv hdfs:///sparrow_recsys/ratings/0000/part-0
+hdfs dfs -put movies.csv hdfs://${HDFS_SERVER}/sparrow_recsys/movies/0000/part-0
+hdfs dfs -put ratings.csv hdfs://${HDFS_SERVER}/sparrow_recsys/ratings/0000/part-0
 
 rm *.csv

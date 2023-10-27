@@ -49,4 +49,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     workdir = os.getenv('WORK_DIR')
-    import_movieLens(args, workdir+"/online/src/main/resources/webroot/sampledata/")
+    import_movieLens(args, workdir+"/maven/src/main/resources/webroot/sampledata/")

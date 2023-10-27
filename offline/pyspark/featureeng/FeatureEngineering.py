@@ -62,7 +62,7 @@ if __name__ == '__main__':
     conf = SparkConf().setAppName('featureEngineering').setMaster('local')
     spark = SparkSession.builder.config(conf=conf).getOrCreate()
     workdir = os.getenv('WORK_DIR')
-    file_path = 'file://' + workdir + '/online/src/main/resources/webroot/'
+    file_path = 'file://' + workdir + '/maven/src/main/resources/webroot/'
     movieResourcesPath = file_path + "sampledata/movies.csv"
     movieSamples = spark.read.format('csv').option('header', 'true').load(movieResourcesPath)
     print("Raw Movie Samples:")

@@ -1,4 +1,7 @@
 import os
+import random
+import numpy as np
+from collections import defaultdict
 from pyspark import SparkConf
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
@@ -6,9 +9,6 @@ from pyspark.sql.types import *
 from pyspark.ml.feature import BucketedRandomProjectionLSH
 from pyspark.mllib.feature import Word2Vec
 from pyspark.ml.linalg import Vectors
-import random
-from collections import defaultdict
-import numpy as np
 from pyspark.sql import functions as F
 
 
@@ -184,19 +184,20 @@ def generateUserEmb(spark, rawSampleDataPath, model, embLength, embOutputPath, s
 
 
 if __name__ == '__main__':
-    conf = SparkConf().setAppName('ctrModel').setMaster('local')
+    conf = SparkConf()
+    conf.setAppName('ctrModel').setMaster("local")
     spark = SparkSession.builder.config(conf=conf).getOrCreate()
     # Change to your own filepath
     workdir = os.getenv('WORK_DIR')
-    file_path = 'file://' + workdir + '/online/src/main/resources/webroot/'
-    rawSampleDataPath = file_path + "sampledata/ratings.csv"
+    file_path = workdir + '/maven/src/main/resources/webroot/'
+    rawSampleDataPath = 'file://' + file_path + "sampledata/ratings.csv"
     embLength = 10
     samples = processItemSequence(spark, rawSampleDataPath)
     model = trainItem2vec(spark, samples, embLength,
-                          embOutputPath=file_path[7:] + "modeldata/item2vecEmb.csv", saveToRedis=False,
+                          embOutputPath=file_path + "modeldata/item2vecEmb.csv", saveToRedis=False,
                           redisKeyPrefix="i2vEmb")
-    graphEmb(samples, spark, embLength, embOutputFilename=file_path[7:] + "modeldata/itemGraphEmb.csv",
-             saveToRedis=True, redisKeyPrefix="graphEmb")
+    graphEmb(samples, spark, embLength, embOutputFilename=file_path + "modeldata/itemGraphEmb.csv",
+             saveToRedis=False, redisKeyPrefix="graphEmb")
     generateUserEmb(spark, rawSampleDataPath, model, embLength,
-                    embOutputPath=file_path[7:] + "modeldata/userEmb.csv", saveToRedis=False,
+                    embOutputPath=file_path + "modeldata/userEmb.csv", saveToRedis=False,
                     redisKeyPrefix="uEmb")

@@ -31,7 +31,7 @@
     </property>
     <property>
         <name>dfs.namenode.rpc-address</name>
-        <value>sparrow-recsys-dev:8020</value>
+        <value>sparrow-recsys:8020</value>
     </property>
     <property>
         <name>dfs.namenode.name.dir</name>

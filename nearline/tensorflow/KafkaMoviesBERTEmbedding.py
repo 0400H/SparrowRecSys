@@ -13,16 +13,15 @@ import tensorflow_text as text
 
 from kafka import KafkaConsumer
 
-
-HDFS_PATH = "hdfs://sparrow-recsys-dev:8020/sparrow_recsys/"
+HDFS_PATH = "hdfs://sparrow-recsys:8020/sparrow_recsys/"
 HDFS_PATH_MOVIE_EMBEDDINGS = HDFS_PATH+"movie-embeddings/"
 HDFS_MOVIE_EMBEDDING_BATCH_SIZE = 3
-REDIS_SERVER="sparrow-recsys-dev"
+REDIS_SERVER="sparrow-recsys"
 REDIS_PORT=6379
 REDIS_PASSWD="123456"
 REDIS_KEY_MOVIE_EMBEDDING_VERSION="sparrow_recsys:version:me"
 REDIS_KEY_PREFIX_MOVIE_EMBEDDING="sparrow_recsys:me"
-KAFKA_SERVERS = "sparrow-recsys-dev:9092"
+KAFKA_SERVERS = "sparrow-recsys:9092"
 
 # get embeddings
 tfhub_handle_preprocess = "https://tfhub.dev/tensorflow/bert_en_uncased_preprocess/3"

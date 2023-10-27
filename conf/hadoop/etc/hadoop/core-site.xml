@@ -23,7 +23,7 @@
     </property>
     <property>
         <name>fs.defaultFS</name>
-        <value>hdfs://sparrow-recsys-dev</value>
+        <value>hdfs://sparrow-recsys</value>
     </property>
     <property>
       <name>hadoop.tmp.dir</name>
