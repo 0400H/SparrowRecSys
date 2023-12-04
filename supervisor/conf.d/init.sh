@@ -1,3 +1,9 @@
 #!/bin/bash
 
-# rm -rf /var/log/supervisor/*.log || true
+set -ex
+
+echo "supervisor init ..."
+
+(
+    # rm -rf /var/log/supervisor/*.log || true
+)

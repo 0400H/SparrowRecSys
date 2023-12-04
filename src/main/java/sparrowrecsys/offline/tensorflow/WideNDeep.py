@@ -9,6 +9,13 @@ from tqdm import tqdm
 
 import tensorflow as tf
 
+
+inter_threads = int(os.getenv('INTER_OP_PARALLELISM_THREADS', default=16))
+intra_threads = int(os.getenv('INTER_OP_PARALLELISM_THREADS', default=16))
+tf.config.threading.set_inter_op_parallelism_threads(inter_threads)
+tf.config.threading.set_intra_op_parallelism_threads(intra_threads)
+print('inter_threads:%d, intra_threads:%d' % (inter_threads, intra_threads))
+
 HDFS_SERVER = "hdfs://sparrow-recsys:8020"
 HDFS_PATH_SAMPLE_DATA = HDFS_SERVER + "/sparrow_recsys/sampledata"
 HDFS_PATH_MODEL_DATA = HDFS_SERVER + "/sparrow_recsys/modeldata"
@@ -27,10 +34,10 @@ if os.path.exists(tmp_sample_dir):
 subprocess.Popen(["hdfs", "dfs", "-get", HDFS_PATH_SAMPLE_DATA, tmp_sample_dir], stdout=subprocess.PIPE).communicate()
 
 # load sample as tf dataset
-def get_dataset(file_path):
+def get_dataset(file_path, batch_size=16):
     dataset = tf.data.experimental.make_csv_dataset(
         file_path,
-        batch_size=12,
+        batch_size=batch_size,
         label_name='label',
         na_value="0",
         num_epochs=1,
@@ -174,7 +181,7 @@ model.summary()
 # evaluate the model
 eval_accuracy = tf.keras.metrics.Accuracy()
 
-test_dataset = get_dataset(f"{tmp_sample_dir}/testSamples/*/part-*.csv")
+test_dataset = get_dataset(f"{tmp_sample_dir}/testSamples/*/part-*.csv", 64)
 for batch_data, labels in tqdm(test_dataset):
     pred = model(batch_data, training=False)
     actual_pred = tf.cast(tf.greater(pred, 0.5), tf.int64)
@@ -184,7 +191,7 @@ print ("Evaluation accuracy: %f" % eval_accuracy.result())
 
 # print some predict results
 predictions = model.predict(test_dataset)
-for prediction, goodRating in tqdm(zip(predictions[:12], list(test_dataset)[0][1][:12])):
+for prediction, goodRating in tqdm(zip(predictions[:16], list(test_dataset)[0][1][:16])):
     print("Predicted good rating: {:.2%}".format(prediction[0]),
           " | Actual rating label: ",
           ("Good Rating" if bool(goodRating) else "Bad Rating"))

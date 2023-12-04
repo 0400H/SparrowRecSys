@@ -1,14 +1,19 @@
 #!/bin/bash
 
+set -ex
+
 mkdir -p /var/run/mysqld
 chmod -R 777 /var/run/mysqld
+kill -9 `pgrep -f mysqld` || true
 
-(
-sleep 10s
+# mysql init
+( (
+sleep 5s
 
 if [ ! -f "/var/log/mysql_init.lock" ]; then
+if [[ `pgrep -f mysqld` ]]; then
 
-touch /var/log/mysql_init.lock
+echo "Start to init mysql..."
 
 mysql << EOF
 use mysql;
@@ -20,8 +25,10 @@ exit
 EOF
 
 mysqladmin -u root password "123456"
+touch /var/log/mysql_init.lock
 
 fi
-) &
+fi
+) || true ) &
 
 mysqld

@@ -184,13 +184,14 @@ def generateUserEmb(spark, rawSampleDataPath, model, embLength, embOutputPath, s
 
 
 if __name__ == '__main__':
-    conf = SparkConf()
-    conf.setAppName('ctrModel').setMaster("local")
-    spark = SparkSession.builder.config(conf=conf).getOrCreate()
-    # Change to your own filepath
     workdir = os.getenv('WORK_DIR')
     file_path = workdir + '/src/main/resources/webroot/'
     rawSampleDataPath = 'file://' + file_path + "sampledata/ratings.csv"
+
+    conf = SparkConf()
+    conf.setAppName('ctrModel').setMaster("local")
+    spark = SparkSession.builder.config(conf=conf).getOrCreate()
+
     embLength = 10
     samples = processItemSequence(spark, rawSampleDataPath)
     model = trainItem2vec(spark, samples, embLength,

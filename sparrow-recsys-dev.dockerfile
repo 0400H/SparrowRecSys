@@ -108,7 +108,7 @@ RUN ssh-keygen -t rsa -f ~/.ssh/id_rsa -P '' && \
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 
 RUN pip3 install pip --upgrade && \
-    pip3 install tensorflow tensorflow_hub tensorflow_text pyspark==${SPARK_VERSION} pymysql redis kafka-python jupyter
+    pip3 install tensorflow tensorflow_hub tensorflow_text pyspark==${SPARK_VERSION} pymysql redis kafka-python jupyter tqdm
 
 COPY conf/ssh /etc/ssh
 COPY conf/mysql /etc/mysql
@@ -118,24 +118,22 @@ COPY conf/flink ${FLINK_HOME}
 COPY conf/zookeeper ${ZOOKEEPER_HOME}
 COPY conf/kafka ${KAFKA_HOME}
 COPY conf/maven ${MAVEN_HOME}
-
 COPY supervisor /etc/supervisor
 
 ENV WORK_DIR=/SparrowRecSys
 WORKDIR ${WORK_DIR}
 
-COPY offline ${WORK_DIR}/offline
-COPY nearline ${WORK_DIR}/nearline
-COPY maven ${WORK_DIR}/maven
+COPY pom.xml ${WORK_DIR}
+COPY src ${WORK_DIR}/src
+RUN mvn clean package
 
-RUN cd maven && \
-    mvn clean package
+COPY workflow.sh ${WORK_DIR}
 
-# # Clean tmp files
-# RUN apt-get clean all \
-#     && rm -rf /var/lib/apt/lists/* \o
-#     && rm -rf ~/.cache/* \
-#     && rm -rf /tmp/*
+# Clean tmp files
+RUN apt-get clean all \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf ~/.cache/* \
+    && rm -rf /tmp/*
 
 COPY entrypoint.sh /usr/bin
 ENTRYPOINT ["/usr/bin/entrypoint.sh"]
