@@ -5,15 +5,23 @@ set -ex
 mkdir -p /var/run/mysqld
 chmod -R 777 /var/run/mysqld
 kill -9 `pgrep -f mysqld` || true
+rm -rf /var/log/mysql/error.log || true
 
-# mysql init
 ( (
-sleep 5s
+# check mysql start status
+while [ true ]
+do
+    echo "Waiting for MySQL start..."
+    if [ -f "/var/log/mysql/error.log" ]; then
+        if [ "`cat /var/log/mysql/error.log | grep '/usr/sbin/mysqld: ready for connections'`" != "" ]; then
+            break
+        fi
+    fi
+    sleep 5s
+done
 
-if [ ! -f "/var/log/mysql_init.lock" ]; then
-if [[ `pgrep -f mysqld` ]]; then
-
-echo "Start to init mysql..."
+# start to init mysql
+echo "Start to init MySQL..."
 
 mysql << EOF
 use mysql;
@@ -25,10 +33,7 @@ exit
 EOF
 
 mysqladmin -u root password "123456"
-touch /var/log/mysql_init.lock
 
-fi
-fi
 ) || true ) &
 
 mysqld

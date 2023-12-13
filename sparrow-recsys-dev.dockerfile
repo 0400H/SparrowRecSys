@@ -110,23 +110,22 @@ RUN ssh-keygen -t rsa -f ~/.ssh/id_rsa -P '' && \
 RUN pip3 install pip --upgrade && \
     pip3 install tensorflow tensorflow_hub tensorflow_text pyspark==${SPARK_VERSION} pymysql redis kafka-python jupyter tqdm
 
-COPY conf/ssh /etc/ssh
-COPY conf/mysql /etc/mysql
-COPY conf/hadoop ${HADOOP_HOME}
-COPY conf/spark ${SPARK_HOME}
-COPY conf/flink ${FLINK_HOME}
-COPY conf/zookeeper ${ZOOKEEPER_HOME}
-COPY conf/kafka ${KAFKA_HOME}
-COPY conf/maven ${MAVEN_HOME}
-COPY supervisor /etc/supervisor
-
 ENV WORK_DIR=/SparrowRecSys
 WORKDIR ${WORK_DIR}
 
 COPY pom.xml ${WORK_DIR}
 COPY src ${WORK_DIR}/src
+COPY conf/maven ${MAVEN_HOME}
 RUN mvn clean package
 
+COPY conf/hadoop ${HADOOP_HOME}
+COPY conf/spark ${SPARK_HOME}
+COPY conf/flink ${FLINK_HOME}
+COPY conf/zookeeper ${ZOOKEEPER_HOME}
+COPY conf/kafka ${KAFKA_HOME}
+COPY conf/ssh /etc/ssh
+COPY conf/mysql /etc/mysql
+COPY supervisor /etc/supervisor
 COPY workflow.sh ${WORK_DIR}
 
 # Clean tmp files

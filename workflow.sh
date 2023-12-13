@@ -2,7 +2,7 @@
 
 set -ex
 
-cd $WORK_DIR/src/main/java/sparrowrecsys
+cd $WORK_DIR/src/main/java/com/sparrowrecsys
 
 # Wait for mysql
 (
@@ -21,12 +21,15 @@ done
 )
 
 (
-    cd offline/pyspark
-    python3 -u embedding/Embedding.py
-    # spark-submit --name Embedding --master yarn --deploy-mode cluster --class sparrowrecsys.offline.spark.embedding.Embedding $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
-
     cd offline/tensorflow
     python3 -u HDFSMoviesBERTEmbedding.py
+
+    # cd offline/pyspark
+    # python3 -u embedding/Embedding.py
+    spark-submit --name Embedding --master yarn --deploy-mode cluster --class sparrowrecsys.offline.spark.embedding.Embedding $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+    # movie embedding LSH
+    spark-submit --name EmbeddingLSH --master yarn --deploy-mode cluster --class sparrowrecsys.offline.spark.embedding.EmbeddingLSH $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
 )
 
 (
@@ -45,9 +48,6 @@ done
 )
 
 (
-    # movie embedding
-    spark-submit --name EmbeddingLSH --master yarn --deploy-mode cluster --class sparrowrecsys.offline.spark.embedding.EmbeddingLSH $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
-
     # feature engineering
     spark-submit --name FeatureEngineering --master yarn --deploy-mode cluster --class sparrowrecsys.offline.spark.featureeng.FeatureEngForRecModel $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
 
@@ -58,23 +58,25 @@ done
 
 (
     MODEL_NAME=sparrow_recsys_widedeep
-    MODEL_BASE_PATH=$WORK_DIR/src/main/java/sparrowrecsys/offline/tensorflow/tmp_model
+    MODEL_BASE_PATH=$WORK_DIR/src/main/java/com/sparrowrecsys/offline/tensorflow/tmp_model
     ln -s ${MODEL_BASE_PATH}/widendeep ${MODEL_BASE_PATH}/${MODEL_NAME}
 
     tensorflow_model_server --port=8500 --rest_api_port=8501 \
         --model_name=${MODEL_NAME} --model_base_path=${MODEL_BASE_PATH}/${MODEL_NAME} &
 )
 
-# Online
-(
-    java -jar $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
-)
-
 # Nearline
 (
     python3 -u ./nearline/tensorflow/KafkaMoviesBERTEmbedding.py &
+)
 
-    # flink run -p 2 -c sparrowrecsys.nearline.flink.NewMovieHandler $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
+(
+    # flink run -c sparrowrecsys.nearline.flink.NewMovieHandler $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
 
-    # flink run -p 2 -c sparrowrecsys.nearline.flink.NewRatingHandler $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
+    # flink run -c sparrowrecsys.nearline.flink.NewRatingHandler $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
+)
+
+# Online
+(
+    java -jar $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
 )

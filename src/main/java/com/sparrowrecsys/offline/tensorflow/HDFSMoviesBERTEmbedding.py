@@ -1,6 +1,7 @@
 # Load movies from HDFS, generate embeddings of movie titles with BERT, then save embeddings to
 # redis and HDFS.
 
+import os
 import subprocess
 from time import localtime, strftime
 
@@ -9,8 +10,6 @@ import redis
 
 import tensorflow_hub as hub
 import tensorflow_text as text
-
-import os
 
 
 HDFS_PATH = "hdfs://sparrow-recsys:8020/sparrow_recsys"
