@@ -34,6 +34,8 @@ EOF
 
 mysqladmin -u root password "123456"
 
+touch /var/log/mysql/init.lock
+
 ) || true ) &
 
 mysqld

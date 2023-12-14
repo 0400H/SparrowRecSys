@@ -67,7 +67,7 @@ public class RecSysServer {
         //create server context
         ServletContextHandler context = new ServletContextHandler();
         context.setContextPath("/");
-//        context.setBaseResource(Resource.newResource(webRootUri));
+        //context.setBaseResource(Resource.newResource(webRootUri));
         context.setResourceBase(basePath);
         context.setWelcomeFiles(new String[] { "index.html" });
         context.getMimeTypes().addMimeMapping("txt","text/plain;charset=utf-8");

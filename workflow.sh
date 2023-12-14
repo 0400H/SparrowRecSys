@@ -6,9 +6,13 @@ cd $WORK_DIR/src/main/java/com/sparrowrecsys
 
 # Wait for mysql
 (
-while [ ! -f "/var/log/mysql_init.lock" ]
+# check mysql start status
+while [ true ]
 do
-    echo "Wait for Mysql ..."
+    echo "Waiting for MySQL init..."
+    if [ -f "/var/log/mysql/init.lock" ]; then
+        break
+    fi
     sleep 5s
 done
 )
@@ -21,12 +25,10 @@ done
 )
 
 (
-    cd offline/tensorflow
-    python3 -u HDFSMoviesBERTEmbedding.py
+    python3 -u offline/tensorflowHDFSMoviesBERTEmbedding.py
 
-    # cd offline/pyspark
-    # python3 -u embedding/Embedding.py
-    spark-submit --name Embedding --master yarn --deploy-mode cluster --class sparrowrecsys.offline.spark.embedding.Embedding $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
+    # python3 -u offline/pysparkembedding/Embedding.py
+    # spark-submit --name Embedding --master yarn --deploy-mode cluster --class sparrowrecsys.offline.spark.embedding.Embedding $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
 
     # movie embedding LSH
     spark-submit --name EmbeddingLSH --master yarn --deploy-mode cluster --class sparrowrecsys.offline.spark.embedding.EmbeddingLSH $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
@@ -51,14 +53,13 @@ done
     # feature engineering
     spark-submit --name FeatureEngineering --master yarn --deploy-mode cluster --class sparrowrecsys.offline.spark.featureeng.FeatureEngForRecModel $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
 
-    cd offline/tensorflow
     export TF_CONFIG='{"cluster":{"worker":["localhost:12345","localhost:12346"],"ps":["localhost:23456","localhost:23457"],"chief":["localhost:34567"]},"task":{"type":"chief","index":0}}'
-    python3 -u ./WideNDeep.py
+    python3 -u offline/tensorflow/WideNDeep.py
 )
 
 (
     MODEL_NAME=sparrow_recsys_widedeep
-    MODEL_BASE_PATH=$WORK_DIR/src/main/java/com/sparrowrecsys/offline/tensorflow/tmp_model
+    MODEL_BASE_PATH=/tmp/model
     ln -s ${MODEL_BASE_PATH}/widendeep ${MODEL_BASE_PATH}/${MODEL_NAME}
 
     tensorflow_model_server --port=8500 --rest_api_port=8501 \

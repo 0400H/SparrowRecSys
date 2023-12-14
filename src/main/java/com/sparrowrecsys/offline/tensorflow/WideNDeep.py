@@ -10,31 +10,39 @@ from tqdm import tqdm
 import tensorflow as tf
 
 
-inter_threads = int(os.getenv('INTER_OP_PARALLELISM_THREADS', default=16))
 intra_threads = int(os.getenv('INTER_OP_PARALLELISM_THREADS', default=16))
-tf.config.threading.set_inter_op_parallelism_threads(inter_threads)
-tf.config.threading.set_intra_op_parallelism_threads(intra_threads)
-print('inter_threads:%d, intra_threads:%d' % (inter_threads, intra_threads))
+print('intra_threads:%d' % (intra_threads))
+
+MODEL_TYPE = "widendeep"
 
 HDFS_SERVER = "hdfs://sparrow-recsys:8020"
 HDFS_PATH_SAMPLE_DATA = HDFS_SERVER + "/sparrow_recsys/sampledata"
 HDFS_PATH_MODEL_DATA = HDFS_SERVER + "/sparrow_recsys/modeldata"
+HDFS_PATH_TARGET_MODEL_DATA = f"{HDFS_PATH_MODEL_DATA}/{MODEL_TYPE}"
+
 REDIS_SERVER="sparrow-recsys"
 REDIS_PORT=6379
 REDIS_PASSWD="123456"
 REDIS_KEY_VERSION_MODEL_WIDE_DEEP = "sparrow_recsys:version:model_wd"
 
+working_dir = '/tmp/my_working_dir'
+log_dir = os.path.join(working_dir, 'log')
+ckpt_filepath = os.path.join(working_dir, 'ckpt')
+backup_dir = os.path.join(working_dir, 'backup')
+
 # download sampling data from HDFS
-tmp_sample_dir = "tmp_sampledata"
-tmp_model_dir = "tmp_model"
+tmp_sample_dir = "/tmp/sample/" + MODEL_TYPE
+tmp_model_dir = "/tmp/model/" + MODEL_TYPE
+train_data = f"{tmp_sample_dir}/trainingSamples/*/part-*.csv"
+test_data = f"{tmp_sample_dir}/testSamples/*/part-*.csv"
 
-if os.path.exists(tmp_sample_dir):
-    shutil.rmtree(tmp_sample_dir)
-
-subprocess.Popen(["hdfs", "dfs", "-get", HDFS_PATH_SAMPLE_DATA, tmp_sample_dir], stdout=subprocess.PIPE).communicate()
+def mkdir(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 # load sample as tf dataset
-def get_dataset(file_path, batch_size=16):
+def get_dataset(file_path):
+    global batch_size
     dataset = tf.data.experimental.make_csv_dataset(
         file_path,
         batch_size=batch_size,
@@ -44,6 +52,19 @@ def get_dataset(file_path, batch_size=16):
         ignore_errors=True)
     return dataset
 
+def dataset_fn(input_context):
+    train_dataset = get_dataset(train_data)
+    dataset = train_dataset
+    dataset = dataset.repeat().shard(
+        input_context.num_input_pipelines,
+        input_context.input_pipeline_id)
+    return dataset
+
+mkdir(tmp_model_dir)
+mkdir(tmp_sample_dir)
+shutil.rmtree(tmp_sample_dir)
+
+subprocess.Popen(["hdfs", "dfs", "-get", HDFS_PATH_SAMPLE_DATA, tmp_sample_dir], stdout=subprocess.PIPE).communicate()
 
 # genre features vocabulary
 genre_vocab = ['Film-Noir', 'Action', 'Adventure', 'Horror', 'Romance', 'War', 'Comedy', 'Western', 'Documentary',
@@ -131,15 +152,7 @@ strategy = tf.distribute.experimental.ParameterServerStrategy(
     cluster_resolver,
     variable_partitioner=variable_partitioner)
 
-def dataset_fn(input_context):
-    train_dataset = get_dataset(f"{tmp_sample_dir}/trainingSamples/*/part-*.csv")
-    dataset = train_dataset
-    dataset = dataset.repeat().shard(
-        input_context.num_input_pipelines,
-        input_context.input_pipeline_id)
-
-    return dataset
-
+batch_size = 64
 dc = tf.keras.utils.experimental.DatasetCreator(dataset_fn)
 
 with strategy.scope():
@@ -162,36 +175,30 @@ with strategy.scope():
         metrics=['accuracy', tf.keras.metrics.AUC(curve='ROC'), tf.keras.metrics.AUC(curve='PR')])
 
 # train the model
-working_dir = '/tmp/my_working_dir'
-log_dir = os.path.join(working_dir, 'log')
-ckpt_filepath = os.path.join(working_dir, 'ckpt')
-backup_dir = os.path.join(working_dir, 'backup')
-
 callbacks = [
     tf.keras.callbacks.TensorBoard(log_dir=log_dir),
     tf.keras.callbacks.ModelCheckpoint(filepath=ckpt_filepath),
     tf.keras.callbacks.BackupAndRestore(backup_dir=backup_dir),
-    # tf.keras.callbacks.experimental.BackupAndRestore(backup_dir=backup_dir),
 ]
 
-model.fit(dc, epochs=5, steps_per_epoch=1000, callbacks=callbacks)
+model.fit(dc, batch_size=batch_size, epochs=5, steps_per_epoch=1000, callbacks=callbacks, workers=intra_threads, use_multiprocessing=True)
 
 model.summary()
 
 # evaluate the model
-eval_accuracy = tf.keras.metrics.Accuracy()
+batch_size=64
+test_dataset = get_dataset(test_data)
 
-test_dataset = get_dataset(f"{tmp_sample_dir}/testSamples/*/part-*.csv", 64)
+eval_accuracy = tf.keras.metrics.Accuracy()
 for batch_data, labels in tqdm(test_dataset):
-    pred = model(batch_data, training=False)
+    pred = model.predict(batch_data, workers=intra_threads, use_multiprocessing=True)
     actual_pred = tf.cast(tf.greater(pred, 0.5), tf.int64)
     eval_accuracy.update_state(labels, actual_pred)
-
 print ("Evaluation accuracy: %f" % eval_accuracy.result())
 
 # print some predict results
-predictions = model.predict(test_dataset)
-for prediction, goodRating in tqdm(zip(predictions[:16], list(test_dataset)[0][1][:16])):
+predictions = model.predict(test_dataset, batch_size=batch_size, workers=intra_threads, use_multiprocessing=True, verbose=0)
+for prediction, goodRating in tqdm(zip(predictions[:batch_size], list(test_dataset)[0][1][:batch_size])):
     print("Predicted good rating: {:.2%}".format(prediction[0]),
           " | Actual rating label: ",
           ("Good Rating" if bool(goodRating) else "Bad Rating"))
@@ -202,7 +209,7 @@ print(f"Saving model with version: {version}")
 
 tf.keras.models.save_model(
     model,
-    f"{tmp_model_dir}/widendeep/{version}",
+    f"{tmp_model_dir}/{version}",
     overwrite=True,
     include_optimizer=True,
     save_format=None,
@@ -210,11 +217,11 @@ tf.keras.models.save_model(
     options=None
 )
 
-if os.path.exists(f"{tmp_model_dir}/widendeep/{version}"):
-    subprocess.Popen(["hdfs", "dfs", "-rm", "-r", f"{HDFS_PATH_MODEL_DATA}/widendeep/{version}"], stdout=subprocess.PIPE).communicate()
-    subprocess.Popen(["hdfs", "dfs", "-mkdir", "-p", f"{HDFS_PATH_MODEL_DATA}/widendeep/"], stdout=subprocess.PIPE).communicate()
-    subprocess.Popen(["hdfs", "dfs", "-put", f"{tmp_model_dir}/widendeep/{version}", f"{HDFS_PATH_MODEL_DATA}/widendeep/"], stdout=subprocess.PIPE).communicate()
-    print(f"WideNDeep model data is uploaded to HDFS: {HDFS_PATH_MODEL_DATA}/widendeep/{version}")
+if os.path.exists(f"{tmp_model_dir}/{version}"):
+    subprocess.Popen(["hdfs", "dfs", "-rm", "-r", f"{HDFS_PATH_TARGET_MODEL_DATA}/{version}"], stdout=subprocess.PIPE).communicate()
+    subprocess.Popen(["hdfs", "dfs", "-mkdir", "-p", f"{HDFS_PATH_TARGET_MODEL_DATA}/"], stdout=subprocess.PIPE).communicate()
+    subprocess.Popen(["hdfs", "dfs", "-put", f"{tmp_model_dir}/{version}", f"{HDFS_PATH_TARGET_MODEL_DATA}/"], stdout=subprocess.PIPE).communicate()
+    print(f"WideNDeep model data is uploaded to HDFS: {HDFS_PATH_TARGET_MODEL_DATA}/{version}")
 
     # update model version in redis
     r = redis.Redis(host=REDIS_SERVER, port=REDIS_PORT, password=REDIS_PASSWD)

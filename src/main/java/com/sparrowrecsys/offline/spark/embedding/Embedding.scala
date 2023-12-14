@@ -272,10 +272,7 @@ object Embedding {
   def main(args: Array[String]): Unit = {
     Logger.getLogger("org").setLevel(Level.ERROR)
 
-    val conf = new SparkConf()
-      .setMaster("local")
-      .setAppName("ctrModel")
-      .set("spark.submit.deployMode", "client")
+    val conf = new SparkConf().setAppName("ctrModel")
 
     val spark = SparkSession.builder.config(conf).getOrCreate()
 

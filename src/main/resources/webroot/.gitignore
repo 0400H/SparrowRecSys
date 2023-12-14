@@ -1,10 +1,5 @@
 sampledata/trainingSamples.csv
 sampledata/testSamples.csv
-sampledata/testSamples
 sampledata/trainingSamples
 modeldata/item2vecEmb.csv
-modeldata/itemGraphEmb.csv
 modeldata/userEmb.csv
-modeldata/MLPRec
-modeldata/neuralcf
-modeldata/.DS_Store
