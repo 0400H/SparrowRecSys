@@ -191,15 +191,14 @@ test_dataset = get_dataset(test_data)
 
 eval_accuracy = tf.keras.metrics.Accuracy()
 for batch_data, labels in tqdm(test_dataset):
-    pred = model.predict(batch_data, workers=intra_threads, use_multiprocessing=True)
-    actual_pred = tf.cast(tf.greater(pred, 0.5), tf.int64)
-    eval_accuracy.update_state(labels, actual_pred)
+    preds = model.predict(batch_data, batch_size=batch_size, workers=intra_threads, use_multiprocessing=True, verbose=0)
+    actual_preds = tf.cast(tf.greater(preds, 0.5), tf.int64)
+    eval_accuracy.update_state(labels, actual_preds)
 print ("Evaluation accuracy: %f" % eval_accuracy.result())
 
 # print some predict results
-predictions = model.predict(test_dataset, batch_size=batch_size, workers=intra_threads, use_multiprocessing=True, verbose=0)
-for prediction, goodRating in tqdm(zip(predictions[:batch_size], list(test_dataset)[0][1][:batch_size])):
-    print("Predicted good rating: {:.2%}".format(prediction[0]),
+for pred, goodRating in tqdm(zip(preds, labels)):
+    print("Predicted good rating: {:.2%}".format(pred[0]),
           " | Actual rating label: ",
           ("Good Rating" if bool(goodRating) else "Bad Rating"))
 

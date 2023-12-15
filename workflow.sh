@@ -25,7 +25,7 @@ done
 )
 
 (
-    python3 -u offline/tensorflowHDFSMoviesBERTEmbedding.py
+    python3 -u offline/tensorflow/HDFSMoviesBERTEmbedding.py
 
     # python3 -u offline/pysparkembedding/Embedding.py
     # spark-submit --name Embedding --master yarn --deploy-mode cluster --class sparrowrecsys.offline.spark.embedding.Embedding $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
@@ -68,14 +68,14 @@ done
 
 # Nearline
 (
-    python3 -u ./nearline/tensorflow/KafkaMoviesBERTEmbedding.py &
+    python3 -u nearline/tensorflow/KafkaMoviesBERTEmbedding.py &
 )
 
-(
-    # flink run -c sparrowrecsys.nearline.flink.NewMovieHandler $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
+# (
+#     flink run -c sparrowrecsys.nearline.flink.NewMovieHandler $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
 
-    # flink run -c sparrowrecsys.nearline.flink.NewRatingHandler $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
-)
+#     flink run -c sparrowrecsys.nearline.flink.NewRatingHandler $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
+# )
 
 # Online
 (
