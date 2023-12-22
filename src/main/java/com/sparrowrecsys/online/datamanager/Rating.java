@@ -1,4 +1,4 @@
-package sparrowrecsys.online.datamanager;
+package com.sparrowrecsys.online.datamanager;
 
 /**
  * Rating Class, contains attributes loaded from movielens ratings.csv

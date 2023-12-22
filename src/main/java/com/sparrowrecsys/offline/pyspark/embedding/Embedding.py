@@ -1,15 +1,15 @@
 import os
 import random
+import redis
 import numpy as np
 from collections import defaultdict
 from pyspark import SparkConf
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import *
-from pyspark.sql.types import *
-from pyspark.ml.feature import BucketedRandomProjectionLSH
-from pyspark.mllib.feature import Word2Vec
-from pyspark.ml.linalg import Vectors
 from pyspark.sql import functions as F
+from pyspark.sql.types import StringType, FloatType, ArrayType, StructType, StructField
+from pyspark.ml.feature import BucketedRandomProjectionLSH
+from pyspark.ml.linalg import Vectors
+from pyspark.mllib.feature import Word2Vec
 
 
 class UdfFunction:
@@ -35,13 +35,17 @@ def processItemSequence(spark, rawSampleDataPath):
     ratingSamples = spark.read.format("csv").option("header", "true").load(rawSampleDataPath)
     # ratingSamples.show(5)
     # ratingSamples.printSchema()
-    sortUdf = udf(UdfFunction.sortF, ArrayType(StringType()))
+
+    # sort by timestamp udf
+    sortUdf = F.udf(UdfFunction.sortF, ArrayType(StringType()))
+    # process rating data then generate rating movie sequence data
     userSeq = ratingSamples \
         .where(F.col("rating") >= 3.5) \
         .groupBy("userId") \
         .agg(sortUdf(F.collect_list("movieId"), F.collect_list("timestamp")).alias('movieIds')) \
-        .withColumn("movieIdStr", array_join(F.col("movieIds"), " "))
-    # userSeq.select("userId", "movieIdStr").show(10, truncate = False)
+        .withColumn("movieIdStr", F.array_join(F.col("movieIds"), " "))
+
+    userSeq.select("userId", "movieIdStr").show(10, truncate = False)
     return userSeq.select('movieIdStr').rdd.map(lambda x: x[0].split(' '))
 
 
@@ -65,7 +69,10 @@ def embeddingLSH(spark, movieEmbMap):
 
 
 def trainItem2vec(spark, samples, embLength, embOutputPath, saveToRedis, redisKeyPrefix):
-    word2vec = Word2Vec().setVectorSize(embLength).setWindowSize(5).setNumIterations(10)
+    word2vec = Word2Vec() \
+                .setVectorSize(embLength) \
+                .setWindowSize(5) \
+                .setNumIterations(10)
     model = word2vec.fit(samples)
     synonyms = model.findSynonyms("158", 20)
     for synonym, cosineSimilarity in synonyms:
@@ -165,6 +172,7 @@ def graphEmb(samples, spark, embLength, embOutputFilename, saveToRedis, redisKey
 
 def generateUserEmb(spark, rawSampleDataPath, model, embLength, embOutputPath, saveToRedis, redisKeyPrefix):
     ratingSamples = spark.read.format("csv").option("header", "true").load(rawSampleDataPath)
+    # ratingSamples.show(10)
     Vectors_list = []
     for key, value in model.getVectors().items():
         Vectors_list.append((key, list(value)))
@@ -175,8 +183,11 @@ def generateUserEmb(spark, rawSampleDataPath, model, embLength, embOutputPath, s
     schema = StructType(fields)
     Vectors_df = spark.createDataFrame(Vectors_list, schema=schema)
     ratingSamples = ratingSamples.join(Vectors_df, on='movieId', how='inner')
-    result = ratingSamples.select('userId', 'emb').rdd.map(lambda x: (x[0], x[1])) \
-        .reduceByKey(lambda a, b: [a[i] + b[i] for i in range(len(a))]).collect()
+    result = ratingSamples \
+                .select('userId', 'emb') \
+                .rdd.map(lambda x: (x[0], x[1])) \
+                .reduceByKey(lambda a, b: [a[i] + b[i] for i in range(len(a))]) \
+                .collect()
     with open(embOutputPath, 'w') as f:
         for row in result:
             vectors = " ".join([str(emb) for emb in row[1]])

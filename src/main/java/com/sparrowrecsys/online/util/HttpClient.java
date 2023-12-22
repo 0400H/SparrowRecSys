@@ -1,4 +1,4 @@
-package sparrowrecsys.online.util;
+package com.sparrowrecsys.online.util;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;

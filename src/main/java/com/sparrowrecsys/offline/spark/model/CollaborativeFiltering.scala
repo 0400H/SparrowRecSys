@@ -1,4 +1,4 @@
-package sparrowrecsys.offline.spark.model
+package com.sparrowrecsys.offline.spark.model
 
 import org.apache.spark.SparkConf
 import org.apache.spark.ml.evaluation.{BinaryClassificationEvaluator, RegressionEvaluator}

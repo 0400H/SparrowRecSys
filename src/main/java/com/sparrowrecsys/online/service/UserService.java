@@ -1,7 +1,7 @@
-package sparrowrecsys.online.service;
+package com.sparrowrecsys.online.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import sparrowrecsys.online.datamanager.DataManager;
-import sparrowrecsys.online.datamanager.User;
+import com.sparrowrecsys.online.datamanager.DataManager;
+import com.sparrowrecsys.online.datamanager.User;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;

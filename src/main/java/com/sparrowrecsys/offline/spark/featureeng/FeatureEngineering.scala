@@ -1,4 +1,4 @@
-package sparrowrecsys.offline.spark.featureeng
+package com.sparrowrecsys.offline.spark.featureeng
 
 import java.io.FileOutputStream
 import java.nio.file.{Files, Paths, StandardCopyOption}

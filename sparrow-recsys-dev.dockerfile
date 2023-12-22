@@ -70,13 +70,13 @@ RUN axel -n 4 https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink
     ln -s ${INSTALL_PREFIX}/flink-${FLINK_VERSION} ${FLINK_HOME}
 
 # Kafka
-ARG KAFKA_VERSION=3.5.0
+ARG KAFKA_VERSION=3.2.3
 ENV KAFKA_HOME=${INSTALL_PREFIX}/kafka
 ENV PATH=${KAFKA_HOME}/bin:${PATH}
-RUN axel -n 4 https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/kafka_2.13-${KAFKA_VERSION}.tgz && \
-    tar -zxvf kafka_2.13-${KAFKA_VERSION}.tgz -C ${INSTALL_PREFIX} && \
-    rm -rf kafka_2.13-${KAFKA_VERSION}.tgz && \
-    ln -s ${INSTALL_PREFIX}/kafka_2.13-${KAFKA_VERSION} ${KAFKA_HOME}
+RUN axel -n 4 https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/kafka_2.12-${KAFKA_VERSION}.tgz && \
+    tar -zxvf kafka_2.12-${KAFKA_VERSION}.tgz -C ${INSTALL_PREFIX} && \
+    rm -rf kafka_2.12-${KAFKA_VERSION}.tgz && \
+    ln -s ${INSTALL_PREFIX}/kafka_2.12-${KAFKA_VERSION} ${KAFKA_HOME}
 
 # Zookeeper
 ARG ZOOKEEPER_VERSION=3.9.1

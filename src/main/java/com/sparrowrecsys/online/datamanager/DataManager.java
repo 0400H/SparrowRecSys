@@ -1,8 +1,8 @@
-package sparrowrecsys.online.datamanager;
+package com.sparrowrecsys.online.datamanager;
 
-import sparrowrecsys.online.model.Embedding;
-import sparrowrecsys.online.util.Config;
-import sparrowrecsys.online.util.Utility;
+import com.sparrowrecsys.online.model.Embedding;
+import com.sparrowrecsys.online.util.Config;
+import com.sparrowrecsys.online.util.Utility;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;

@@ -1,10 +1,10 @@
-package sparrowrecsys.nearline.flink
+package com.sparrowrecsys.nearline.flink
 
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 
-import sparrowrecsys.online.datamanager.KafkaMessaging
-import sparrowrecsys.online.util.Config
+import com.sparrowrecsys.online.datamanager.KafkaMessaging
+import com.sparrowrecsys.online.util.Config
 import org.apache.flink.api.common.serialization.{SimpleStringEncoder, SimpleStringSchema}
 import org.apache.flink.connector.file.sink.FileSink
 import org.apache.flink.core.fs.Path

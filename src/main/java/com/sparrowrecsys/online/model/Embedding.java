@@ -1,4 +1,4 @@
-package sparrowrecsys.online.model;
+package com.sparrowrecsys.online.model;
 
 import java.util.ArrayList;
 

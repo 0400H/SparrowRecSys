@@ -1,4 +1,4 @@
-package sparrowrecsys.offline.spark.embedding
+package com.sparrowrecsys.offline.spark.embedding
 
 import java.io.{BufferedWriter, File, FileWriter}
 import java.nio.file.{Files, Paths, StandardCopyOption}

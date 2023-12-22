@@ -1,4 +1,4 @@
-package sparrowrecsys.online.datamanager;
+package com.sparrowrecsys.online.datamanager;
 
 import redis.clients.jedis.Jedis;
 

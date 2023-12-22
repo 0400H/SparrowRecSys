@@ -1,4 +1,4 @@
-package sparrowrecsys.offline.spark.evaluate
+package com.sparrowrecsys.offline.spark.evaluate
 
 import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics

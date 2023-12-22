@@ -1,4 +1,4 @@
-package sparrowrecsys.online.util;
+package com.sparrowrecsys.online.util;
 
 public class ABTest {
     final static int trafficSplitNumber = 5;

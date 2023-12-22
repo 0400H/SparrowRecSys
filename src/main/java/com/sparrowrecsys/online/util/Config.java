@@ -1,4 +1,4 @@
-package sparrowrecsys.online.util;
+package com.sparrowrecsys.online.util;
 
 public class Config {
     public static boolean IS_ENABLE_AB_TEST = false;

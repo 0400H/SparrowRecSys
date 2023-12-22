@@ -1,8 +1,8 @@
-package sparrowrecsys.offline.spark.featureeng
+package com.sparrowrecsys.offline.spark.featureeng
 
 import java.nio.file.{Files, Paths, StandardCopyOption}
 
-import sparrowrecsys.online.util.Config
+import com.sparrowrecsys.online.util.Config
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.expressions.{UserDefinedFunction, Window}

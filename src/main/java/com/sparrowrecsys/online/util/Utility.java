@@ -1,6 +1,6 @@
-package sparrowrecsys.online.util;
+package com.sparrowrecsys.online.util;
 
-import sparrowrecsys.online.model.Embedding;
+import com.sparrowrecsys.online.model.Embedding;
 
 public class Utility {
     public static Embedding parseEmbStr(String embStr){

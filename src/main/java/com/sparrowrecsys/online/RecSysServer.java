@@ -1,7 +1,7 @@
-package sparrowrecsys.online;
+package com.sparrowrecsys.online;
 
-import sparrowrecsys.online.datamanager.DataManager;
-import sparrowrecsys.online.service.*;
+import com.sparrowrecsys.online.datamanager.DataManager;
+import com.sparrowrecsys.online.service.*;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;

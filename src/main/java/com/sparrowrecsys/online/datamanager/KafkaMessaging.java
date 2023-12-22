@@ -1,4 +1,4 @@
-package sparrowrecsys.online.datamanager;
+package com.sparrowrecsys.online.datamanager;
 
 import java.util.Properties;
 
@@ -7,7 +7,7 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-import static sparrowrecsys.online.util.Config.KAFKA_BROKER_SERVERS;
+import static com.sparrowrecsys.online.util.Config.KAFKA_BROKER_SERVERS;
 
 /**
  * Utils for Kafka message sending.

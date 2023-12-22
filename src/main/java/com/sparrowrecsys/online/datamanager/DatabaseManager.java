@@ -1,6 +1,6 @@
-package sparrowrecsys.online.datamanager;
+package com.sparrowrecsys.online.datamanager;
 
-import sparrowrecsys.online.util.Config;
+import com.sparrowrecsys.online.util.Config;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

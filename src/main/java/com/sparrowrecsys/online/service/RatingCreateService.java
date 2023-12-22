@@ -1,9 +1,9 @@
-package sparrowrecsys.online.service;
+package com.sparrowrecsys.online.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import sparrowrecsys.online.datamanager.DataManager;
-import sparrowrecsys.online.datamanager.Movie;
-import sparrowrecsys.online.datamanager.Rating;
+import com.sparrowrecsys.online.datamanager.DataManager;
+import com.sparrowrecsys.online.datamanager.Movie;
+import com.sparrowrecsys.online.datamanager.Rating;
 import org.apache.parquet.Strings;
 
 import javax.servlet.ServletException;

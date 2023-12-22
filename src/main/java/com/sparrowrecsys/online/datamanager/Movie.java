@@ -1,8 +1,8 @@
-package sparrowrecsys.online.datamanager;
+package com.sparrowrecsys.online.datamanager;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import sparrowrecsys.online.model.Embedding;
+import com.sparrowrecsys.online.model.Embedding;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

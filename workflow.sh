@@ -28,10 +28,10 @@ done
     python3 -u offline/tensorflow/HDFSMoviesBERTEmbedding.py
 
     # python3 -u offline/pysparkembedding/Embedding.py
-    # spark-submit --name Embedding --master yarn --deploy-mode cluster --class sparrowrecsys.offline.spark.embedding.Embedding $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
+    # spark-submit --name Embedding --master yarn --deploy-mode cluster --class com.sparrowrecsys.offline.spark.embedding.Embedding $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
 
     # movie embedding LSH
-    spark-submit --name EmbeddingLSH --master yarn --deploy-mode cluster --class sparrowrecsys.offline.spark.embedding.EmbeddingLSH $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
+    spark-submit --name EmbeddingLSH --master yarn --deploy-mode cluster --class com.sparrowrecsys.offline.spark.embedding.EmbeddingLSH $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
 )
 
 (
@@ -51,7 +51,7 @@ done
 
 (
     # feature engineering
-    spark-submit --name FeatureEngineering --master yarn --deploy-mode cluster --class sparrowrecsys.offline.spark.featureeng.FeatureEngForRecModel $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
+    spark-submit --name FeatureEngineering --master yarn --deploy-mode cluster --class com.sparrowrecsys.offline.spark.featureeng.FeatureEngForRecModel $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar
 
     export TF_CONFIG='{"cluster":{"worker":["localhost:12345","localhost:12346"],"ps":["localhost:23456","localhost:23457"],"chief":["localhost:34567"]},"task":{"type":"chief","index":0}}'
     python3 -u offline/tensorflow/WideNDeep.py
@@ -72,9 +72,9 @@ done
 )
 
 # (
-#     flink run -c sparrowrecsys.nearline.flink.NewMovieHandler $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
+#     flink run -c com.sparrowrecsys.nearline.flink.NewMovieHandler $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
 
-#     flink run -c sparrowrecsys.nearline.flink.NewRatingHandler $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
+#     flink run -c com.sparrowrecsys.nearline.flink.NewRatingHandler $WORK_DIR/target/SparrowRecSys-1.0-SNAPSHOT-jar-with-dependencies.jar &
 # )
 
 # Online

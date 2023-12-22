@@ -1,10 +1,10 @@
-package sparrowrecsys.online.service;
+package com.sparrowrecsys.online.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import sparrowrecsys.online.recprocess.RecForYouProcess;
-import sparrowrecsys.online.util.ABTest;
-import sparrowrecsys.online.datamanager.Movie;
-import sparrowrecsys.online.util.Config;
+import com.sparrowrecsys.online.recprocess.RecForYouProcess;
+import com.sparrowrecsys.online.util.ABTest;
+import com.sparrowrecsys.online.datamanager.Movie;
+import com.sparrowrecsys.online.util.Config;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

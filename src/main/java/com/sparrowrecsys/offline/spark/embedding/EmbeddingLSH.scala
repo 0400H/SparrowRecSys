@@ -1,10 +1,10 @@
-package sparrowrecsys.offline.spark.embedding
+package com.sparrowrecsys.offline.spark.embedding
 
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import sparrowrecsys.online.datamanager.RedisClient
-import sparrowrecsys.online.util.Config
+import com.sparrowrecsys.online.datamanager.RedisClient
+import com.sparrowrecsys.online.util.Config
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
 import org.apache.spark.ml.feature.BucketedRandomProjectionLSH

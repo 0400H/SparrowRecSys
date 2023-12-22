@@ -1,8 +1,8 @@
-package sparrowrecsys.online.service;
+package com.sparrowrecsys.online.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import sparrowrecsys.online.datamanager.Movie;
-import sparrowrecsys.online.recprocess.SimilarMovieProcess;
+import com.sparrowrecsys.online.datamanager.Movie;
+import com.sparrowrecsys.online.recprocess.SimilarMovieProcess;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
