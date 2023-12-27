@@ -7,7 +7,7 @@ MYSQL_PORT=3306
 MYSQL_USER=root
 MYSQL_PASSWD=123456
 MYSQL_DB=sparrow_recsys
-HDFS_SERVER=sparrow-recsys:8020
+HDFS_SERVER=localhost:8020
 
 mysql -h${MYSQL_HOST} -P${MYSQL_PORT} -u${MYSQL_USER} -p${MYSQL_PASSWD} -D${MYSQL_DB} -e "select * from movies" -N  > movies.csv
 mysql -h${MYSQL_HOST} -P${MYSQL_PORT} -u${MYSQL_USER} -p${MYSQL_PASSWD} -D${MYSQL_DB} -e "select * from ratings" -N  > ratings.csv

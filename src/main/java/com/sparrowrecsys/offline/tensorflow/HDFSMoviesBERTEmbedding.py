@@ -12,9 +12,9 @@ import tensorflow_hub as hub
 import tensorflow_text as text
 
 
-HDFS_PATH = "hdfs://sparrow-recsys:8020/sparrow_recsys"
+HDFS_PATH = "hdfs://localhost:8020/sparrow_recsys"
 HDFS_PATH_MOVIE_EMBEDDINGS = HDFS_PATH + "/movie-embeddings"
-REDIS_SERVER = "sparrow-recsys"
+REDIS_SERVER = "localhost"
 REDIS_PORT = 6379
 REDIS_PASSWD = "123456"
 REDIS_KEY_MOVIE_EMBEDDING_VERSION = "sparrow_recsys:version:me"

@@ -9,7 +9,7 @@ public class Config {
     public static final String DATA_SOURCE_REDIS = "redis";
     public static String EMB_DATA_SOURCE = Config.DATA_SOURCE_FILE;
 
-    public static String SERVER_ADDRESS = "sparrow-recsys";
+    public static String SERVER_ADDRESS = "localhost";
 
     public static String KAFKA_BROKER_SERVERS = SERVER_ADDRESS + ":9092";
 

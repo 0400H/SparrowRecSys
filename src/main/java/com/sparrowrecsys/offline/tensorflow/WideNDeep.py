@@ -15,12 +15,12 @@ print('intra_threads:%d' % (intra_threads))
 
 MODEL_TYPE = "widendeep"
 
-HDFS_SERVER = "hdfs://sparrow-recsys:8020"
+HDFS_SERVER = "hdfs://localhost:8020"
 HDFS_PATH_SAMPLE_DATA = HDFS_SERVER + "/sparrow_recsys/sampledata"
 HDFS_PATH_MODEL_DATA = HDFS_SERVER + "/sparrow_recsys/modeldata"
 HDFS_PATH_TARGET_MODEL_DATA = f"{HDFS_PATH_MODEL_DATA}/{MODEL_TYPE}"
 
-REDIS_SERVER="sparrow-recsys"
+REDIS_SERVER="localhost"
 REDIS_PORT=6379
 REDIS_PASSWD="123456"
 REDIS_KEY_VERSION_MODEL_WIDE_DEEP = "sparrow_recsys:version:model_wd"
